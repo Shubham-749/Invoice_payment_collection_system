@@ -31,25 +31,18 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
 export const deactivateUser = async (req: Request, res: Response) => {
   try {
-    const { user_id } = req.params;
+    const { user_id } = req.body;
     const user = await UserRepository.getUserById(Number(user_id));
+    if (!user) {
+      return res.status(400).json({ error: "User does not exist" });
+    }
+    if (user.status === UserStatus.INACTIVE) {
+      return res.status(400).json({ error: "User is already deactivated" });
+    }
+
     user.status = UserStatus.INACTIVE;
-    const deletedUser = await UserRepository.addOrUpdateUser(user);
-
-    return res.status(200);
-  } catch (error) {
-    console.log(error);
-    return res.sendStatus(400);
-  }
-}
-
-const getUser = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    const user = await UserRepository.getUserById(Number(id));
-
-    return res.status(200).json(user);
+    await UserRepository.addOrUpdateUser(user);
+    return res.status(200).json({ "success": true });
   } catch (error) {
     console.log(error);
     return res.sendStatus(400);
@@ -66,12 +59,12 @@ export const signin = async (req: Request, res: Response) => {
     let { email, password } = req.body;
     const user = await UserRepository.getUserByEmail(email);
     if (!user) {
-      throw new Error("User does not exist")
+      return res.status(400).json({ error: "User does not exist" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
-      throw new Error("Password incorrect")
+      return res.status(400).json({ error: "Password incorrect" });
     }
 
     res.status(200).json({ "success": true })
@@ -93,7 +86,7 @@ export const signup = async (req: Request, res: Response) => {
 
     let userExist = await UserRepository.getUserByEmail(email);
     if (userExist) {
-      throw new Error("User already exists")
+      return res.status(400).json({ error: "User already exist" });
     }
 
     const salt = await bcrypt.genSalt(10)

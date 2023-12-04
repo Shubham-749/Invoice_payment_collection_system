@@ -15,6 +15,7 @@ router.get('/login',
     check("password", "Please enter password of length 8 or above").isLength({ min: 8 }),
     signin)
 
+// admin APIs. Todo - implement authorization
 router.get('/all', getAllUsers);
 router.post('/deactivate', deactivateUser);
 

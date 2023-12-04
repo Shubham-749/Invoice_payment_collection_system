@@ -4,7 +4,11 @@ import { addInvoice, getAllInvoices, getUserInvoicesBasedOnComponent } from '../
 export const router = express.Router()
 
 router.post('/create', addInvoice);
-router.get('/all', getAllInvoices);
+
+// Fetches invoices for user based on the component selected - Payer/Receiver
 router.get('/user_invoices', getUserInvoicesBasedOnComponent);
+
+// fetch all invoices for admin portal
+router.get('/all', getAllInvoices);
 
 module.exports = router;
